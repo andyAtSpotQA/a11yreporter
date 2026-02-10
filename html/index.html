@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accessibility Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f0f2f5; color: #1a1a2e; line-height: 1.5; }
+  header { background: #1a1a2e; color: #fff; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 20px; font-weight: 600; }
+  header .subtitle { font-size: 13px; opacity: 0.7; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  .breadcrumb { font-size: 14px; margin-bottom: 20px; }
+  .breadcrumb a { color: #4361ee; text-decoration: none; cursor: pointer; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb span { color: #666; }
+
+  /* Stats bar */
+  .stats-bar { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .stat-card { background: #fff; border-radius: 8px; padding: 16px 20px; flex: 1; min-width: 130px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .stat-card .label { font-size: 12px; text-transform: uppercase; color: #666; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .stat-card .value { font-size: 28px; font-weight: 700; }
+  .stat-card .value.critical { color: #7b2d8e; }
+  .stat-card .value.serious { color: #d00000; }
+  .stat-card .value.moderate { color: #e85d04; }
+  .stat-card .value.minor { color: #c9a800; }
+  .stat-card .value.total { color: #1a1a2e; }
+
+  /* Cards */
+  .card { background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 20px; overflow: hidden; }
+  .card-header { padding: 16px 20px; border-bottom: 1px solid #eee; font-weight: 600; font-size: 16px; display: flex; align-items: center; justify-content: space-between; }
+  .card-body { padding: 0; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 10px 16px; font-size: 12px; text-transform: uppercase; color: #666; letter-spacing: 0.5px; background: #fafafa; border-bottom: 1px solid #eee; }
+  td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 14px; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr.clickable { cursor: pointer; }
+  tr.clickable:hover { background: #f8f9ff; }
+
+  /* Impact badges */
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+  .badge-critical { background: #f0d6f6; color: #7b2d8e; }
+  .badge-serious { background: #ffd6d6; color: #d00000; }
+  .badge-moderate { background: #ffe0c2; color: #e85d04; }
+  .badge-minor { background: #fff3c4; color: #8a7600; }
+
+  /* Tags */
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; background: #e8ecf4; color: #4361ee; margin: 2px 2px 2px 0; }
+  .tag-wcag { background: #dbeafe; color: #1e40af; }
+
+  /* File cards grid */
+  .file-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .file-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); padding: 20px; cursor: pointer; transition: box-shadow 0.15s, transform 0.15s; }
+  .file-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); transform: translateY(-1px); }
+  .file-card .file-name { font-weight: 600; font-size: 15px; margin-bottom: 8px; word-break: break-all; }
+  .file-card .file-meta { font-size: 13px; color: #666; display: flex; gap: 12px; flex-wrap: wrap; }
+
+  /* Impact bar (mini horizontal) */
+  .impact-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .impact-bar .ib { font-size: 12px; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+  .ib-critical { background: #f0d6f6; color: #7b2d8e; }
+  .ib-serious { background: #ffd6d6; color: #d00000; }
+  .ib-moderate { background: #ffe0c2; color: #e85d04; }
+  .ib-minor { background: #fff3c4; color: #8a7600; }
+
+  /* Expandable node details */
+  .expand-btn { background: none; border: 1px solid #ddd; border-radius: 4px; padding: 2px 10px; font-size: 12px; cursor: pointer; color: #4361ee; }
+  .expand-btn:hover { background: #f0f4ff; }
+  .node-details { display: none; }
+  .node-details.open { display: table-row; }
+  .node-panel { background: #f8f9fa; border-radius: 6px; padding: 16px; margin: 4px 0; }
+  .node-item { border: 1px solid #e9ecef; border-radius: 6px; padding: 12px; margin-bottom: 10px; background: #fff; }
+  .node-item:last-child { margin-bottom: 0; }
+  .node-item .node-label { font-size: 11px; text-transform: uppercase; color: #888; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .node-item code { display: block; background: #f1f3f5; padding: 8px 10px; border-radius: 4px; font-size: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; font-family: 'SF Mono', Monaco, Consolas, monospace; }
+  .node-item .selector { color: #4361ee; font-family: 'SF Mono', Monaco, Consolas, monospace; font-size: 12px; }
+  .node-item .fix { background: #fff8e1; padding: 8px 10px; border-radius: 4px; font-size: 13px; border-left: 3px solid #e85d04; margin-top: 4px; white-space: pre-wrap; }
+  .help-link { color: #4361ee; text-decoration: none; font-size: 13px; }
+  .help-link:hover { text-decoration: underline; }
+
+  /* Rule card layout */
+  .rule-meta { padding: 16px 20px; border-bottom: 1px solid #eee; }
+  .rule-meta p { font-size: 13px; color: #555; margin-bottom: 6px; }
+  .rule-meta .tags-row { margin-top: 8px; }
+  .elements-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .elements-table th { text-align: left; padding: 8px 14px; font-size: 11px; text-transform: uppercase; color: #666; letter-spacing: 0.5px; background: #fafafa; border-bottom: 1px solid #eee; }
+  .elements-table td { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+  .elements-table tr:last-child td { border-bottom: none; }
+  .elements-table code { display: block; background: #f1f3f5; padding: 6px 8px; border-radius: 4px; font-size: 11px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; font-family: 'SF Mono', Monaco, Consolas, monospace; max-height: 80px; }
+  .elements-table .selector { color: #4361ee; font-family: 'SF Mono', Monaco, Consolas, monospace; font-size: 11px; word-break: break-all; }
+  .elements-table .fix { font-size: 12px; white-space: pre-wrap; color: #444; }
+  .occurrence-count { display: inline-block; background: #e8ecf4; color: #4361ee; font-weight: 600; font-size: 11px; padding: 1px 7px; border-radius: 10px; }
+  .source-files { font-size: 11px; color: #666; }
+  .source-files span { display: inline-block; background: #f0f2f5; padding: 1px 6px; border-radius: 3px; margin: 1px 2px 1px 0; }
+
+  /* Consolidated button */
+  .consolidated-btn { display: inline-block; background: #4361ee; color: #fff; border: none; border-radius: 6px; padding: 10px 22px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; margin-bottom: 20px; transition: background 0.15s; }
+  .consolidated-btn:hover { background: #3a56d4; }
+
+  /* Drop zone */
+  .drop-zone { border: 2px dashed #ccc; border-radius: 12px; padding: 48px 24px; text-align: center; margin-bottom: 24px; transition: border-color 0.2s, background 0.2s; }
+  .drop-zone.dragover { border-color: #4361ee; background: #f0f4ff; }
+  .drop-zone p { font-size: 16px; color: #666; margin-bottom: 12px; }
+  .drop-zone .pick-btn { background: #4361ee; color: #fff; border: none; border-radius: 6px; padding: 10px 24px; font-size: 14px; cursor: pointer; }
+  .drop-zone .pick-btn:hover { background: #3a56d4; }
+  .drop-zone .hint { font-size: 13px; color: #999; margin-top: 8px; }
+
+  .loading { text-align: center; padding: 48px; color: #666; }
+
+  @media (max-width: 768px) {
+    .stats-bar { flex-direction: column; }
+    .stat-card { min-width: auto; }
+    .file-cards { grid-template-columns: 1fr; }
+    td, th { padding: 8px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Accessibility Report</h1>
+    <div class="subtitle">axe-core Audit Results</div>
+  </div>
+</header>
+
+<div class="container" id="app">
+  <div class="loading">Loading reports...</div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  const KNOWN_FILES = [
+    'c6d1b904e579aa4c9b204976a4a5dfbe858d60a36b10fa2b2894fd5a8514568a.json',
+    '25e991557d6e08c1358398bb68ef000bcb76ff2612ca27dfa7659d43f2606673.json'
+  ];
+
+  const IMPACT_ORDER = ['critical', 'serious', 'moderate', 'minor'];
+
+  let reportFiles = []; // [{name, data: [...]}]
+
+  // --- Helpers ---
+
+  function esc(s) {
+    const el = document.createElement('span');
+    el.textContent = s;
+    return el.innerHTML;
+  }
+
+  function shortName(name) {
+    if (name.length > 20) return name.substring(0, 12) + '...' + name.slice(-12);
+    return name;
+  }
+
+  function impactBadge(impact) {
+    const i = (impact || 'unknown').toLowerCase();
+    return '<span class="badge badge-' + i + '">' + esc(impact || 'Unknown') + '</span>';
+  }
+
+  function impactSort(a, b) {
+    return IMPACT_ORDER.indexOf((a.impact || '').toLowerCase()) - IMPACT_ORDER.indexOf((b.impact || '').toLowerCase());
+  }
+
+  function countNodes(violations) {
+    return violations.reduce(function(sum, v) { return sum + (v.nodes ? v.nodes.length : 0); }, 0);
+  }
+
+  function countByImpact(violations) {
+    var counts = { critical: 0, serious: 0, moderate: 0, minor: 0 };
+    violations.forEach(function(v) {
+      var key = (v.impact || '').toLowerCase();
+      if (counts[key] !== undefined) counts[key] += (v.nodes ? v.nodes.length : 0);
+    });
+    return counts;
+  }
+
+  function isWcagTag(tag) {
+    return /^wcag/.test(tag);
+  }
+
+  function renderTags(tags) {
+    if (!tags || !tags.length) return '';
+    return tags.map(function(t) {
+      var cls = isWcagTag(t) ? 'tag tag-wcag' : 'tag';
+      return '<span class="' + cls + '">' + esc(t) + '</span>';
+    }).join(' ');
+  }
+
+  // --- Routing ---
+
+  function navigate(hash) {
+    window.location.hash = hash;
+  }
+
+  function getRoute() {
+    var h = window.location.hash.replace('#', '') || 'summary';
+    if (h === 'summary') return { page: 'summary' };
+    if (h === 'report') return { page: 'consolidated' };
+    var m = h.match(/^report\/(\d+)$/);
+    if (m) return { page: 'report', index: parseInt(m[1], 10) };
+    return { page: 'summary' };
+  }
+
+  // --- Rendering ---
+
+  function render() {
+    var app = document.getElementById('app');
+    var route = getRoute();
+
+    if (reportFiles.length === 0) {
+      app.innerHTML = renderDropZone();
+      setupDropZone();
+      return;
+    }
+
+    if (route.page === 'consolidated') {
+      app.innerHTML = renderConsolidatedReport();
+    } else if (route.page === 'report' && route.index < reportFiles.length) {
+      app.innerHTML = renderReport(route.index);
+    } else {
+      app.innerHTML = renderSummary();
+    }
+    setupInteractions();
+  }
+
+  function renderDropZone() {
+    return '<div class="drop-zone" id="dropZone">' +
+      '<p>No reports loaded. Drop axe-core JSON result files here or use the button below.</p>' +
+      '<button class="pick-btn" id="pickBtn">Choose JSON Files</button>' +
+      '<input type="file" id="filePicker" multiple accept=".json" style="display:none">' +
+      '<div class="hint">Accepts axe-core accessibility audit JSON files</div>' +
+      '</div>';
+  }
+
+  // --- Deduplication ---
+
+  function deduplicateNodes(sources) {
+    // sources: [{name, data: [violations]}]
+    // Returns: [{ruleId, impact, help, description, helpUrl, tags, elements: [{node, count, sourceFiles}]}]
+    var ruleMap = {};
+
+    sources.forEach(function(src) {
+      src.data.forEach(function(v) {
+        if (!ruleMap[v.id]) {
+          ruleMap[v.id] = {
+            ruleId: v.id,
+            impact: v.impact,
+            help: v.help,
+            description: v.description,
+            helpUrl: v.helpUrl,
+            tags: v.tags,
+            elementMap: {}
+          };
+        }
+
+        (v.nodes || []).forEach(function(node) {
+          var targetKey = JSON.stringify(node.target);
+          var key = v.id + '||' + targetKey;
+          if (!ruleMap[v.id].elementMap[key]) {
+            ruleMap[v.id].elementMap[key] = {
+              node: node,
+              count: 0,
+              sourceFiles: []
+            };
+          }
+          ruleMap[v.id].elementMap[key].count++;
+          if (ruleMap[v.id].elementMap[key].sourceFiles.indexOf(src.name) === -1) {
+            ruleMap[v.id].elementMap[key].sourceFiles.push(src.name);
+          }
+        });
+      });
+    });
+
+    // Convert to array
+    return Object.values(ruleMap).map(function(rule) {
+      return {
+        ruleId: rule.ruleId,
+        impact: rule.impact,
+        help: rule.help,
+        description: rule.description,
+        helpUrl: rule.helpUrl,
+        tags: rule.tags,
+        elements: Object.values(rule.elementMap)
+      };
+    });
+  }
+
+  function renderRuleCard(rule, showSourceColumn) {
+    var html = '';
+    var elemCount = rule.elements.length;
+
+    html += '<div class="card">';
+
+    // Rule header
+    html += '<div class="card-header">' +
+      '<div>' + impactBadge(rule.impact) + ' <strong style="margin-left:8px;">' + esc(rule.ruleId) + '</strong>' +
+      ' &mdash; ' + esc(rule.help) + '</div>' +
+      '<div style="font-size:13px;color:#666;">' + elemCount + ' element' + (elemCount !== 1 ? 's' : '') + '</div>' +
+      '</div>';
+
+    // Rule metadata block
+    html += '<div class="rule-meta">';
+    html += '<p>' + esc(rule.description) + '</p>';
+    if (rule.helpUrl) {
+      html += '<p><a class="help-link" href="' + esc(rule.helpUrl) + '" target="_blank" rel="noopener">View axe documentation</a></p>';
+    }
+    if (rule.tags && rule.tags.length) {
+      html += '<div class="tags-row">' + renderTags(rule.tags) + '</div>';
+    }
+    // Fix summary — grab from first element (same for all nodes under a rule)
+    var fixText = rule.elements.length && rule.elements[0].node.failureSummary;
+    if (fixText) {
+      html += '<div class="fix" style="margin-top:10px;">' + esc(fixText) + '</div>';
+    }
+    html += '</div>';
+
+    // Affected elements table
+    if (rule.elements.length) {
+      html += '<div class="card-body"><table class="elements-table"><thead><tr>';
+      if (showSourceColumn) html += '<th>Source</th>';
+      html += '<th>CSS Selector</th><th>HTML Snippet</th><th>Occurrences</th>';
+      html += '</tr></thead><tbody>';
+
+      rule.elements.forEach(function(el) {
+        var node = el.node;
+        html += '<tr>';
+        if (showSourceColumn) {
+          html += '<td class="source-files">' + el.sourceFiles.map(function(f) { return '<span>' + esc(shortName(f)) + '</span>'; }).join(' ') + '</td>';
+        }
+        html += '<td><span class="selector">' + esc(node.target ? node.target.join(' > ') : '') + '</span></td>';
+        html += '<td>' + (node.html ? '<code>' + esc(node.html) + '</code>' : '-') + '</td>';
+        html += '<td style="text-align:center;"><span class="occurrence-count">' + el.count + '</span></td>';
+        html += '</tr>';
+      });
+
+      html += '</tbody></table></div>';
+    }
+
+    html += '</div>';
+    return html;
+  }
+
+  function renderSummary() {
+    // Aggregate across all files
+    var allViolations = [];
+    reportFiles.forEach(function(rf) { allViolations = allViolations.concat(rf.data); });
+
+    var totalRules = allViolations.length;
+    var totalNodes = countNodes(allViolations);
+    var byImpact = countByImpact(allViolations);
+
+    // Deduplicate rules across files
+    var ruleMap = {};
+    reportFiles.forEach(function(rf) {
+      rf.data.forEach(function(v) {
+        if (!ruleMap[v.id]) {
+          ruleMap[v.id] = { id: v.id, impact: v.impact, description: v.description, help: v.help, helpUrl: v.helpUrl, tags: v.tags, totalNodes: 0, fileCount: 0 };
+        }
+        ruleMap[v.id].totalNodes += (v.nodes ? v.nodes.length : 0);
+        ruleMap[v.id].fileCount++;
+      });
+    });
+
+    var html = '';
+
+    // Stats bar
+    html += '<div class="stats-bar">' +
+      '<div class="stat-card"><div class="label">Rule Violations</div><div class="value total">' + totalRules + '</div></div>' +
+      '<div class="stat-card"><div class="label">Failing Elements</div><div class="value total">' + totalNodes + '</div></div>' +
+      '<div class="stat-card"><div class="label">Critical</div><div class="value critical">' + byImpact.critical + '</div></div>' +
+      '<div class="stat-card"><div class="label">Serious</div><div class="value serious">' + byImpact.serious + '</div></div>' +
+      '<div class="stat-card"><div class="label">Moderate</div><div class="value moderate">' + byImpact.moderate + '</div></div>' +
+      '<div class="stat-card"><div class="label">Minor</div><div class="value minor">' + byImpact.minor + '</div></div>' +
+      '</div>';
+
+    // Consolidated report button
+    html += '<button class="consolidated-btn" data-nav="report">View Consolidated Report</button>';
+
+    // Rolled-up rules table
+    var rules = Object.values(ruleMap).sort(impactSort);
+    html += '<div class="card"><div class="card-header">All Violations (Rolled Up Across Files)</div><div class="card-body">' +
+      '<table><thead><tr><th>Rule</th><th>Impact</th><th>Description</th><th>Failing Elements</th><th>Files</th><th>Reference</th></tr></thead><tbody>';
+
+    rules.forEach(function(r) {
+      html += '<tr class="clickable" data-nav="report">' +
+        '<td><strong>' + esc(r.id) + '</strong></td>' +
+        '<td>' + impactBadge(r.impact) + '</td>' +
+        '<td>' + esc(r.help) + '</td>' +
+        '<td>' + r.totalNodes + '</td>' +
+        '<td>' + r.fileCount + '</td>' +
+        '<td>' + (r.helpUrl ? '<a class="help-link" href="' + esc(r.helpUrl) + '" target="_blank" rel="noopener">Docs</a>' : '-') + '</td>' +
+        '</tr>';
+    });
+    html += '</tbody></table></div></div>';
+
+    // Per-file cards
+    html += '<div class="card"><div class="card-header">Report Files</div></div>';
+    html += '<div class="file-cards">';
+    reportFiles.forEach(function(rf, i) {
+      var fc = countByImpact(rf.data);
+      var nodeCount = countNodes(rf.data);
+      html += '<div class="file-card" data-nav="report/' + i + '">' +
+        '<div class="file-name">' + esc(rf.name) + '</div>' +
+        '<div class="file-meta">' +
+        '<span>' + rf.data.length + ' rules violated</span>' +
+        '<span>' + nodeCount + ' failing elements</span>' +
+        '</div>' +
+        '<div class="impact-bar">' +
+        (fc.critical ? '<span class="ib ib-critical">Critical: ' + fc.critical + '</span>' : '') +
+        (fc.serious ? '<span class="ib ib-serious">Serious: ' + fc.serious + '</span>' : '') +
+        (fc.moderate ? '<span class="ib ib-moderate">Moderate: ' + fc.moderate + '</span>' : '') +
+        (fc.minor ? '<span class="ib ib-minor">Minor: ' + fc.minor + '</span>' : '') +
+        '</div>' +
+        '</div>';
+    });
+    html += '</div>';
+
+    // Drop zone for adding more
+    html += '<div class="drop-zone" id="dropZone" style="padding:24px;">' +
+      '<p style="font-size:14px;">Drop additional JSON files here to add more reports</p>' +
+      '<button class="pick-btn" id="pickBtn" style="padding:6px 16px; font-size:13px;">Add Files</button>' +
+      '<input type="file" id="filePicker" multiple accept=".json" style="display:none">' +
+      '</div>';
+
+    return html;
+  }
+
+  function renderConsolidatedReport() {
+    var html = '';
+
+    // Breadcrumb
+    html += '<div class="breadcrumb"><a onclick="window.location.hash=\'summary\'">Executive Summary</a> <span> / Consolidated Report</span></div>';
+
+    // Aggregate stats
+    var allViolations = [];
+    reportFiles.forEach(function(rf) { allViolations = allViolations.concat(rf.data); });
+    var totalNodes = countNodes(allViolations);
+    var byImpact = countByImpact(allViolations);
+
+    // Deduplicate
+    var mergedRules = deduplicateNodes(reportFiles);
+    var dedupedTotal = mergedRules.reduce(function(sum, r) { return sum + r.elements.length; }, 0);
+
+    html += '<div class="stats-bar">' +
+      '<div class="stat-card"><div class="label">Rules Violated</div><div class="value total">' + mergedRules.length + '</div></div>' +
+      '<div class="stat-card"><div class="label">Unique Elements</div><div class="value total">' + dedupedTotal + '</div></div>' +
+      '<div class="stat-card"><div class="label">Total Occurrences</div><div class="value total">' + totalNodes + '</div></div>' +
+      '<div class="stat-card"><div class="label">Critical</div><div class="value critical">' + byImpact.critical + '</div></div>' +
+      '<div class="stat-card"><div class="label">Serious</div><div class="value serious">' + byImpact.serious + '</div></div>' +
+      '<div class="stat-card"><div class="label">Moderate</div><div class="value moderate">' + byImpact.moderate + '</div></div>' +
+      '<div class="stat-card"><div class="label">Minor</div><div class="value minor">' + byImpact.minor + '</div></div>' +
+      '</div>';
+
+    // Source files legend
+    html += '<div style="font-size:13px;color:#666;margin-bottom:16px;">Merged from ' + reportFiles.length + ' source file' + (reportFiles.length !== 1 ? 's' : '') + ': ' +
+      reportFiles.map(function(rf) { return '<strong>' + esc(shortName(rf.name)) + '</strong>'; }).join(', ') + '</div>';
+
+    // Rule cards
+    mergedRules.sort(impactSort).forEach(function(rule) {
+      html += renderRuleCard(rule, true);
+    });
+
+    return html;
+  }
+
+  function renderReport(index) {
+    var rf = reportFiles[index];
+    if (!rf) return '<p>Report not found.</p>';
+
+    var html = '';
+
+    // Breadcrumb
+    html += '<div class="breadcrumb"><a onclick="window.location.hash=\'summary\'">Executive Summary</a> <span> / ' + esc(rf.name) + '</span></div>';
+
+    // File-level stats
+    var totalNodes = countNodes(rf.data);
+    var byImpact = countByImpact(rf.data);
+
+    html += '<div class="stats-bar">' +
+      '<div class="stat-card"><div class="label">Rules Violated</div><div class="value total">' + rf.data.length + '</div></div>' +
+      '<div class="stat-card"><div class="label">Failing Elements</div><div class="value total">' + totalNodes + '</div></div>' +
+      '<div class="stat-card"><div class="label">Critical</div><div class="value critical">' + byImpact.critical + '</div></div>' +
+      '<div class="stat-card"><div class="label">Serious</div><div class="value serious">' + byImpact.serious + '</div></div>' +
+      '<div class="stat-card"><div class="label">Moderate</div><div class="value moderate">' + byImpact.moderate + '</div></div>' +
+      '<div class="stat-card"><div class="label">Minor</div><div class="value minor">' + byImpact.minor + '</div></div>' +
+      '</div>';
+
+    // Build rule-centric structure for this single file
+    var singleFileRules = deduplicateNodes([rf]);
+    singleFileRules.sort(impactSort).forEach(function(rule) {
+      html += renderRuleCard(rule, false);
+    });
+
+    return html;
+  }
+
+  function setupInteractions() {
+    document.querySelectorAll('[data-nav]').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        // Don't navigate when clicking links inside clickable rows
+        if (e.target.closest('a')) return;
+        navigate(el.getAttribute('data-nav'));
+      });
+    });
+    setupDropZone();
+  }
+
+  function setupDropZone() {
+    var dropZone = document.getElementById('dropZone');
+    var pickBtn = document.getElementById('pickBtn');
+    var filePicker = document.getElementById('filePicker');
+    if (!dropZone) return;
+
+    dropZone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+    dropZone.addEventListener('dragleave', function() {
+      dropZone.classList.remove('dragover');
+    });
+    dropZone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      handleFiles(e.dataTransfer.files);
+    });
+
+    if (pickBtn && filePicker) {
+      pickBtn.addEventListener('click', function() { filePicker.click(); });
+      filePicker.addEventListener('change', function() { handleFiles(filePicker.files); });
+    }
+  }
+
+  function handleFiles(fileList) {
+    Array.from(fileList).forEach(function(file) {
+      if (!file.name.endsWith('.json')) return;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          var data = JSON.parse(e.target.result);
+          if (Array.isArray(data)) {
+            var exists = reportFiles.some(function(rf) { return rf.name === file.name; });
+            if (!exists) {
+              reportFiles.push({ name: file.name, data: data });
+            }
+            navigate('summary');
+            render();
+          }
+        } catch (err) {
+          console.error('Failed to parse ' + file.name, err);
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  // --- Auto-load from ../json/ ---
+
+  function autoLoad() {
+    var attempted = 0;
+
+    KNOWN_FILES.forEach(function(fname) {
+      var url = '../json/' + encodeURIComponent(fname);
+      fetch(url).then(function(res) {
+        if (!res.ok) throw new Error(res.status);
+        return res.json();
+      }).then(function(data) {
+        if (Array.isArray(data)) {
+          reportFiles.push({ name: fname, data: data });
+        }
+      }).catch(function() {
+        // Silently fail — user can load via file picker
+      }).finally(function() {
+        attempted++;
+        if (attempted === KNOWN_FILES.length) {
+          render();
+        }
+      });
+    });
+  }
+
+  // --- Init ---
+
+  window.addEventListener('hashchange', render);
+  autoLoad();
+})();
+</script>
+
+</body>
+</html>
