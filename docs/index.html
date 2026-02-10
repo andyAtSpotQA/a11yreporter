@@ -152,6 +152,15 @@
     return el.innerHTML;
   }
 
+  function friendlyName(name, index) {
+    // Strip .json extension, then check if what remains looks like a hash (40+ hex chars)
+    var base = name.replace(/\.json$/i, '');
+    if (/^[0-9a-f]{40,}$/i.test(base)) {
+      return 'Report ' + (index + 1);
+    }
+    return name;
+  }
+
   function shortName(name) {
     if (name.length > 20) return name.substring(0, 12) + '...' + name.slice(-12);
     return name;
@@ -330,7 +339,10 @@
         var node = el.node;
         html += '<tr>';
         if (showSourceColumn) {
-          html += '<td class="source-files">' + el.sourceFiles.map(function(f) { return '<span>' + esc(shortName(f)) + '</span>'; }).join(' ') + '</td>';
+          html += '<td class="source-files">' + el.sourceFiles.map(function(f) {
+            var idx = reportFiles.findIndex(function(rf) { return rf.name === f; });
+            return '<span title="' + esc(f) + '">' + esc(friendlyName(f, idx >= 0 ? idx : 0)) + '</span>';
+          }).join(' ') + '</td>';
         }
         html += '<td><span class="selector">' + esc(node.target ? node.target.join(' > ') : '') + '</span></td>';
         html += '<td>' + (node.html ? '<code>' + esc(node.html) + '</code>' : '-') + '</td>';
@@ -405,7 +417,7 @@
       var fc = countByImpact(rf.data);
       var nodeCount = countNodes(rf.data);
       html += '<div class="file-card" data-nav="report/' + i + '">' +
-        '<div class="file-name">' + esc(rf.name) + '</div>' +
+        '<div class="file-name" title="' + esc(rf.name) + '">' + esc(friendlyName(rf.name, i)) + '</div>' +
         '<div class="file-meta">' +
         '<span>' + rf.data.length + ' rules violated</span>' +
         '<span>' + nodeCount + ' failing elements</span>' +
@@ -458,7 +470,7 @@
 
     // Source files legend
     html += '<div style="font-size:13px;color:#666;margin-bottom:16px;">Merged from ' + reportFiles.length + ' source file' + (reportFiles.length !== 1 ? 's' : '') + ': ' +
-      reportFiles.map(function(rf) { return '<strong>' + esc(shortName(rf.name)) + '</strong>'; }).join(', ') + '</div>';
+      reportFiles.map(function(rf, i) { return '<strong title="' + esc(rf.name) + '">' + esc(friendlyName(rf.name, i)) + '</strong>'; }).join(', ') + '</div>';
 
     // Rule cards
     mergedRules.sort(impactSort).forEach(function(rule) {
@@ -475,7 +487,7 @@
     var html = '';
 
     // Breadcrumb
-    html += '<div class="breadcrumb"><a onclick="window.location.hash=\'summary\'">Executive Summary</a> <span> / ' + esc(rf.name) + '</span></div>';
+    html += '<div class="breadcrumb"><a onclick="window.location.hash=\'summary\'">Executive Summary</a> <span title="' + esc(rf.name) + '"> / ' + esc(friendlyName(rf.name, index)) + '</span></div>';
 
     // File-level stats
     var totalNodes = countNodes(rf.data);
