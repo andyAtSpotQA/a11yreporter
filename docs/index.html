@@ -558,13 +558,13 @@
     });
   }
 
-  // --- Auto-load from ../json/ ---
+  // --- Auto-load from json/ ---
 
   function autoLoad() {
     var attempted = 0;
 
     KNOWN_FILES.forEach(function(fname) {
-      var url = '../json/' + encodeURIComponent(fname);
+      var url = 'json/' + encodeURIComponent(fname);
       fetch(url).then(function(res) {
         if (!res.ok) throw new Error(res.status);
         return res.json();
